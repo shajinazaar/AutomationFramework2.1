@@ -1,4 +1,5 @@
 import Common.DatabaseConnection;
+import Database.DataConnection;
 import Excel.DataCollection;
 import Excel.ExcelLib;
 import Log.LogJ;
@@ -31,7 +32,8 @@ public class MainManager {
     private ExtentReports extent;
     private ReportMethods reportMethods;
     private  String AppConfiguration_ExcelFileName;
-    private DatabaseConnection DataConnection = new DatabaseConnection();
+    private DatabaseConnection Data = new DatabaseConnection(); //DatabaseConnection class object
+    private DataConnection db;                   // DataConnection class object
 
     // Implementation for loading parameters from Excel
     //private ExcelLib excelLib = new ExcelLib();
@@ -117,14 +119,19 @@ public class MainManager {
             logName = ExcelLib.readData(dataCol, 1, "LogName");
 
             dataCol = ExcelLib.populateInCollection(pathToExcelFiles + AppConfiguration_ExcelFileName, DBConfig_ExcelSheetName);
-            DataConnection.DbName = "Iris";
-            DataConnection.DbSid = ExcelLib.readData(dataCol, 1, "IrisServiceName");
-            DataConnection.DbUser = ExcelLib.readData(dataCol, 1, "IrisDbUser");
-            DataConnection.DbPassword = ExcelLib.readData(dataCol, 1, "IrisDbPassword");
-            DataConnection.DbHost = ExcelLib.readData(dataCol, 1, "IrisDbHost");
-            DataConnection.DBPort = ExcelLib.readData(dataCol, 1, "IrisDbPort");
-            DataConnection.UseSID = ExcelLib.readData(dataCol, 1, "IrisUseSid");
-            db = new DatabaseConnection(DataConnection.DbHost, DataConnection.DbSid, DataConnection.DbUser, DataConnection.DbPassword, DataConnection.UseSID, DataConnection.DBPort);
+            Data.setDbName("Iris");
+            Data.setDbSid(ExcelLib.readData(dataCol, 1, "IrisServiceName"));
+            Data.setDbUser(ExcelLib.readData(dataCol, 1, "IrisDbUser"));
+            Data.setDbPassword (ExcelLib.readData(dataCol, 1, "IrisDbPassword"));
+            Data.setDbHost (ExcelLib.readData(dataCol, 1, "IrisDbHost"));
+            Data.setDbPort(ExcelLib.readData(dataCol, 1, "IrisDbPort"));
+            Data.setUseSid(ExcelLib.readData(dataCol, 1, "IrisUseSid"));
+            db = new DataConnection(Data.getDbHost(),
+                    Data.getDbSid(),
+                    Data.getDbUser(),
+                    Data.getDbPassword(),
+                    Data.getUseSid(),
+                    Data.getDbPort());
 
         } catch (Exception e) {
             logger.info("Exception in loadParamsFromExcel: " + e.getMessage());
