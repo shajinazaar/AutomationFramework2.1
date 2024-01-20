@@ -17,7 +17,7 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
 
     // https://mvnrepository.com/artifact/com.aventstack/extentreports
-    implementation group: 'com.aventstack', name: 'extentreports', version: '5.0.9'
+    implementation group: 'com.aventstack', name: 'extentreports', version: '4.1.5'
 
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
     implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.16.1'

@@ -1,4 +1,5 @@
 import Common.DatabaseConnection;
+import Database.DataConnection;
 import Excel.DataCollection;
 import Excel.ExcelLib;
 import Log.LogJ;
@@ -12,33 +13,32 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class MainManager {
     private static final Logger logger = LogManager.getLogger(MainManager.class);
     private LogJ jl;
     private String environment;
-
     private String buildUsername;
-
     private String buildId;
     private String buildNumber;
     private String path;
     private String target;
     private String logPath;
     private String logName;
-
     private Helper helpObj;
     private ExtentReports extent;
     private ReportMethods reportMethods;
-    private  String AppConfiguration_ExcelFileName;
-    private DatabaseConnection DataConnection = new DatabaseConnection();
 
-    // Implementation for loading parameters from Excel
-    //private ExcelLib excelLib = new ExcelLib();
-    private String pathToExcelFiles = "path/to/excel/files"; // Replace with Excel file actual path
-    private String AppConfiguration_ExcelFileName = "config.xlsx"; // Replace with actual Excel filename
+    private DatabaseConnection Data = new DatabaseConnection(); //DatabaseConnection class object
+    private DataConnection db;     // DataConnection class object
+
+    private String pathToExcelFiles = "src/main/Configurations/ExcelFiles";
+    private String AppConfigurationExcelFileName = "AppConfiguration.xlsx"; // Replace with actual Excel filename
     private String Environment_ExcelSheetName = "Environment";
     private String DBConfig_ExcelSheetName = "DBConfig";
+    private String pathToElementFactory = "src/main/Configurations/ElementFactory/";
+    private Map<String,String> SampleXml;
 
 
     public static void main(String[] args) {
@@ -59,7 +59,7 @@ public class MainManager {
         testConnectivity();
 
         // Execution Set Manager
-        ExecutionSetManager executionSetManager = new ExecutionSetManager(/* pass required parameters */);
+        ExecutionSetManager executionSetManager = new ExecutionSetManager(db,helpObj,SampleXml);
         executionSetManager.run();
     }
 
@@ -102,29 +102,34 @@ public class MainManager {
     private void loadParamsFromAppConfig() {
         // Implementation for loading parameters from AppConfig
 
-        AppConfiguration_ExcelFileName = Helper.initializeVariable("ExcelFileName");
+        AppConfigurationExcelFileName = Helper.initializeVariable("ExcelFileName");
     }
 
     private void loadParamsFromExcel() {
 
         // Implementation for loading parameters from Excel
         try {
-            List<DataCollection> dataCol = ExcelLib.populateInCollection(pathToExcelFiles + AppConfiguration_ExcelFileName, Environment_ExcelSheetName);
+            List<DataCollection> dataCol = ExcelLib.populateInCollection(pathToExcelFiles + AppConfigurationExcelFileName, Environment_ExcelSheetName);
             environment = ExcelLib.readData(dataCol, 1, "Environment");
             buildUsername = ExcelLib.readData(dataCol, 1, "BuildUser");
             buildId = ExcelLib.readData(dataCol, 1, "BuildID");
             buildNumber = ExcelLib.readData(dataCol, 1, "BuildNumber");
             logName = ExcelLib.readData(dataCol, 1, "LogName");
 
-            dataCol = ExcelLib.populateInCollection(pathToExcelFiles + AppConfiguration_ExcelFileName, DBConfig_ExcelSheetName);
-            DataConnection.DbName = "Iris";
-            DataConnection.DbSid = ExcelLib.readData(dataCol, 1, "IrisServiceName");
-            DataConnection.DbUser = ExcelLib.readData(dataCol, 1, "IrisDbUser");
-            DataConnection.DbPassword = ExcelLib.readData(dataCol, 1, "IrisDbPassword");
-            DataConnection.DbHost = ExcelLib.readData(dataCol, 1, "IrisDbHost");
-            DataConnection.DBPort = ExcelLib.readData(dataCol, 1, "IrisDbPort");
-            DataConnection.UseSID = ExcelLib.readData(dataCol, 1, "IrisUseSid");
-            db = new DatabaseConnection(DataConnection.DbHost, DataConnection.DbSid, DataConnection.DbUser, DataConnection.DbPassword, DataConnection.UseSID, DataConnection.DBPort);
+            dataCol = ExcelLib.populateInCollection(pathToExcelFiles + AppConfigurationExcelFileName, DBConfig_ExcelSheetName);
+            Data.setDbName("Iris");
+            Data.setDbSid(ExcelLib.readData(dataCol, 1, "IrisServiceName"));
+            Data.setDbUser(ExcelLib.readData(dataCol, 1, "IrisDbUser"));
+            Data.setDbPassword (ExcelLib.readData(dataCol, 1, "IrisDbPassword"));
+            Data.setDbHost (ExcelLib.readData(dataCol, 1, "IrisDbHost"));
+            Data.setDbPort(ExcelLib.readData(dataCol, 1, "IrisDbPort"));
+            Data.setUseSid(ExcelLib.readData(dataCol, 1, "IrisUseSid"));
+            db = new DataConnection(Data.getDbHost(),
+                    Data.getDbSid(),
+                    Data.getDbUser(),
+                    Data.getDbPassword(),
+                    Data.getUseSid(),
+                    Data.getDbPort());
 
         } catch (Exception e) {
             logger.info("Exception in loadParamsFromExcel: " + e.getMessage());
@@ -133,6 +138,8 @@ public class MainManager {
 
     private void initializeElementFactory() {
         // Implementation for initializing element factory
+      SampleXml = helpObj.getXmlKeyValueDictionary(pathToElementFactory + "Sample.xml");
+
     }
 
     private void testConnectivity() {

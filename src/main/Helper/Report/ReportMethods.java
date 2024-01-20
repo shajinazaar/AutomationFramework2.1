@@ -3,14 +3,15 @@ package Report;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.media.MediaEntityBuilder;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -64,7 +65,8 @@ public class ReportMethods{
 
             String screenShotPath = capture(driver, "screenshot_" + new SimpleDateFormat(DATE_FORMAT).format(new Date()) + testCaseId);
             logger.info("Test Info: Screenshot Path " + screenShotPath);
-            test.info("details", MediaEntityBuilder.createScreenCaptureFromPath(screenShotPath).build());
+            // Attach screenshot using addScreenCaptureFromPath()
+            test.addScreenCaptureFromPath(screenShotPath);
         } catch (IOException e) {
             logger.error("Error capturing screenshot: " + e.getMessage(), e);
         }
@@ -81,7 +83,8 @@ public class ReportMethods{
 
             String screenShotPath = capture(driver, "screenshot_" + new SimpleDateFormat(DATE_FORMAT).format(new Date()) + testCaseId);
             logger.info("Test Failed: Screenshot Path " + screenShotPath);
-            test.info("details", MediaEntityBuilder.createScreenCaptureFromPath(screenShotPath).build());
+            // Attach screenshot using addScreenCaptureFromPath()
+            test.addScreenCaptureFromPath(screenShotPath);
         } catch (IOException e) {
             logger.error("Error capturing screenshot: " + e.getMessage(), e);
         }
@@ -110,9 +113,8 @@ public class ReportMethods{
         logger.info("===========CAPTURING SCREENSHOT========");
         logger.info("SCREENSHOT NAME: " + screenShotName);
         TakesScreenshot ts = (TakesScreenshot) driver;
-        String screenshotBase64 = ts.getScreenshotAs(OutputType.BASE64);
-        String screenshotPath = Paths.get(screenshotPath, screenShotName + "." + SCREENSHOT_FORMAT).toString();
-        FileUtilBase64.writeBase64ToFile(screenshotBase64, screenshotPath);
-        return screenshotPath;
+        File screenshotFile = new File(Paths.get(screenshotPath, screenShotName + "." + SCREENSHOT_FORMAT).toString());
+        Files.write(screenshotFile.toPath(), ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES));
+        return screenshotFile.getAbsolutePath(); // returns absolute path
     }
 }
